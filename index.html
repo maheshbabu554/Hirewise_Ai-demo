@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HireWise AI - HTML Prototype</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<style>
+body{background:#f4f6fb;font-family:system-ui,Segoe UI,Roboto,sans-serif}
+.side{position:fixed;inset:0 auto 0 0;width:240px;background:#0f172a;color:#fff;display:flex;flex-direction:column;padding:18px 14px;z-index:10}
+.side .brand{font-weight:700;font-size:19px;margin-bottom:20px}.side .brand small{display:block;font-weight:400;font-size:11px;color:#94a3b8}
+.side a.nav-i{color:#cbd5e1;text-decoration:none;padding:10px 12px;border-radius:9px;display:block;margin-bottom:3px;cursor:pointer}
+.side a.nav-i:hover,.side a.nav-i.on{background:#1e293b;color:#fff}
+.side .bottom{margin-top:auto;font-size:13px}
+.main{margin-left:240px}.top{background:#fff;padding:12px 24px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center}
+.page{padding:24px}.card{border:0;box-shadow:0 1px 3px rgba(15,23,42,.08)}
+/* login */
+.lg{min-height:100vh;display:flex}.lg-l{flex:1;background:linear-gradient(135deg,#0f172a,#1d4ed8);color:#fff;padding:60px;display:flex;flex-direction:column;justify-content:center}
+.lg-l h1{font-weight:700;font-size:40px}.lg-l h1 span{color:#7dd3fc}.lg-r{flex:1;display:flex;align-items:center;justify-content:center;background:#fff;padding:30px}
+.lg-box{width:100%;max-width:400px}.logo{width:46px;height:46px;border-radius:12px;background:#1d4ed8;color:#fff;font-weight:700;font-size:24px;display:flex;align-items:center;justify-content:center}
+.role-btn{width:100%;padding:12px;border-radius:12px;font-weight:600;background:#fff;border:2px solid}
+.role-r{border-color:#0d6efd;color:#0d6efd}.role-r:hover{background:#0d6efd;color:#fff}
+.role-a{border-color:#1f2937;color:#1f2937}.role-a:hover{background:#1f2937;color:#fff}
+.kpi h2{font-weight:700}.ev{border-left:4px solid #94a3b8!important}.ev.F{border-left-color:#16a34a!important}tr[role=button]{cursor:pointer}.stage{min-width:120px}
+@media(max-width:900px){.lg-l{display:none}.side{position:static;width:auto}.main{margin:0}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="modal fade" id="m" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="mt"></h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body" id="mb"></div><div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" id="ms">Save</button></div></div></div></div>
+<div class="position-fixed top-0 end-0 p-3" style="z-index:2000"><div id="toast" class="toast text-bg-dark"><div class="toast-body" id="tb"></div></div></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ---------- DUMMY DATA (in memory; refresh resets) ---------- */
+const STAGES=["New","Reviewing","Interview Planned","Interviewed","Shortlisted","Selected","On Hold","Rejected","Closed"];
+const POST=["Interviewed","Shortlisted","Selected","On Hold","Rejected","Closed"];
+const STAFF=["Priya Menon","Karthik Rao","Neha Iyer"];
+const re=/^[^\s@]+@[^\s@]+\.[^\s@]+$/,today="2026-11-26";
+const D={
+ vacancies:[
+  {id:1,title:"Python Backend Developer",loc:"Hyderabad",n:2,status:"Open",owner:"Priya Menon",skills:["Python","Flask","SQL","REST API","Git"],opt:["Docker","AWS"],desc:"Build and maintain Flask REST APIs and database-backed services.",date:"05-11-2026"},
+  {id:2,title:"Frontend Developer (React)",loc:"Bengaluru",n:1,status:"Open",owner:"Priya Menon",skills:["JavaScript","React","HTML","CSS"],opt:["TypeScript"],desc:"Create responsive user interfaces using React.",date:"12-11-2026"},
+  {id:3,title:"QA Automation Engineer",loc:"Chennai",n:1,status:"Open",owner:"Priya Menon",skills:["Selenium","Python","Test Planning"],opt:["CI/CD"],desc:"Design and run automated test suites.",date:"18-11-2026"},
+  {id:4,title:"DevOps Engineer",loc:"Pune",n:1,status:"Open",owner:"Karthik Rao",skills:["Docker","AWS","Linux"],opt:["Kubernetes"],desc:"Own CI/CD pipelines and cloud infrastructure.",date:"16-11-2026"},
+  {id:5,title:"Data Analyst Intern",loc:"Remote",n:2,status:"Closed",owner:"Priya Menon",skills:["SQL","Excel"],opt:["Power BI"],desc:"Support the analytics team with reports.",date:"17-09-2026"}],
+ candidates:[
+  {id:1,name:"Aarav Sharma",email:"aarav.sharma@example.com",phone:"+91 90000 11111",vid:1,status:"New",exp:3,skills:["Python","Flask","SQL","REST API","Git"]},
+  {id:2,name:"Meera Nair",email:"meera.nair@example.com",phone:"+91 90000 22222",vid:1,status:"Reviewing",exp:1,skills:["Python","Django","SQL"]},
+  {id:3,name:"Rohan Verma",email:"rohan.verma@example.com",phone:"+91 90000 33333",vid:1,status:"Interview Planned",exp:6,skills:["Python","Flask","AWS","Docker"],ok:true},
+  {id:4,name:"Sneha Reddy",email:"sneha.reddy@example.com",phone:"+91 90000 44444",vid:1,status:"Selected",exp:4,skills:["Python","Flask","SQL","REST API"],ok:true,
+   iv:{perf:21,conf:8,comm:12,total:41,when:"2026-11-20T10:00",who:"Priya Menon",raw:"Strong Flask and SQL fundamentals.\nExplained REST design clearly.\nCould improve Docker knowledge.",sum:"AI-organised draft. Review and edit.\n\nKey points from the notes:\n- Strong Flask and SQL fundamentals.\n- Explained REST design clearly.\n- Could improve Docker knowledge."}},
+  {id:5,name:"Ishaan Gupta",email:"ishaan.gupta@example.com",phone:"+91 90000 55555",vid:2,status:"Shortlisted",exp:2,skills:["JavaScript","React","CSS"],ok:true},
+  {id:6,name:"Ananya Das",email:"ananya.das@example.com",phone:"+91 90000 66666",vid:2,status:"Interviewed",exp:0,skills:["JavaScript","React","CSS"],ok:true,
+   iv:{perf:17,conf:7,comm:11,total:35,when:"2026-11-22T15:00",who:"Priya Menon",raw:"Good React basics.\nNeeds more depth in state management.",sum:"AI-organised draft. Review and edit.\n\nKey points from the notes:\n- Good React basics.\n- Needs more depth in state management."}},
+  {id:7,name:"Farhan Ali",email:"farhan.ali@example.com",phone:"+91 90000 77777",vid:3,status:"On Hold",exp:5,skills:["Selenium","Python"]},
+  {id:8,name:"Divya Pillai",email:"divya.pillai@example.com",phone:"+91 90000 88888",vid:3,status:"Rejected",exp:1,skills:["Manual Testing","SQL"]}],
+ interviews:[
+  {id:1,cid:3,dt:"2026-11-27T11:00",place:"HireWise Office, Hyderabad - Room 3B",by:"Priya Menon",status:"Scheduled"},
+  {id:2,cid:5,dt:"2026-11-29T14:30",place:"HireWise Office, Bengaluru - Room 1A",by:"Karthik Rao",status:"Scheduled"},
+  {id:3,cid:4,dt:"2026-11-20T10:00",place:"HireWise Office, Hyderabad",by:"Priya Menon",status:"Completed"},
+  {id:4,cid:6,dt:"2026-11-22T15:00",place:"HireWise Office, Bengaluru",by:"Priya Menon",status:"Completed"}],
+ followups:[
+  {id:1,cid:2,due:"2026-11-27",text:"Call to confirm interview availability",done:false},
+  {id:2,cid:5,due:"2026-11-28",text:"Share interview schedule and instructions",done:false},
+  {id:3,cid:7,due:"2026-11-25",text:"Check notice period and expected CTC",done:false},
+  {id:4,cid:4,due:"2026-11-21",text:"Collect onboarding documents",done:true}],
+ users:[
+  {id:1,name:"Aditi Kapoor",email:"admin@hirewise.demo",role:"Administrator",active:true},
+  {id:2,name:"Priya Menon",email:"recruiter@hirewise.demo",role:"Recruiter",active:true},
+  {id:3,name:"Karthik Rao",email:"karthik.rao@hirewise.demo",role:"Recruiter",active:true},
+  {id:4,name:"Neha Iyer",email:"neha.iyer@hirewise.demo",role:"Placement Coordinator",active:true},
+  {id:5,name:"Vikram Singh",email:"vikram.singh@hirewise.demo",role:"Recruiter",active:false}],
+ requests:[
+  {id:1,name:"Rahul Joshi",email:"rahul.joshi@example.com",role:"Recruiter",status:"pending",date:"25-11-2026"},
+  {id:2,name:"Pooja Bhatt",email:"pooja.bhatt@example.com",role:"Placement Coordinator",status:"pending",date:"26-11-2026"},
+  {id:3,name:"Neha Iyer",email:"neha.iyer@hirewise.demo",role:"Placement Coordinator",status:"approved",date:"26-10-2026"}],
+ log:[
+  ["Aditi Kapoor","Login","2026-11-26 09:10","Success","Email and password were valid for an active administrator account."],
+  ["Priya Menon","Closed vacancy \"Data Analyst Intern\"","2026-11-25 16:15","Success","The recruiter has permission, so the vacancy status changed to Closed."],
+  ["Vikram Singh","Login attempt","2026-11-25 13:02","Failed","Login blocked because this account is deactivated by an administrator."],
+  ["Karthik Rao","Uploaded resume.exe","2026-11-24 14:20","Failed","Rejected because only PDF and DOCX files are accepted."],
+  ["Karthik Rao","Opened an administrator page","2026-11-24 11:05","Failed","Access denied (403): recruiters cannot open administrator-only pages."],
+  ["Aditi Kapoor","Reset password for Neha Iyer","2026-11-23 16:25","Success","The administrator is authorised, so a one-time temporary password was generated."]],
+ acts:["Ananya Das interview completed","Sneha Reddy moved to Selected","Vacancy \"Data Analyst Intern\" closed"]
+};
+let role=null,route="dashboard",I={};
+const $=s=>document.querySelector(s),vac=id=>D.vacancies.find(v=>v.id==id),cand=id=>D.candidates.find(c=>c.id==id);
+const stamp=()=>new Date().toISOString().slice(0,16).replace("T"," "),fmt=s=>s?s.slice(8,10)+"-"+s.slice(5,7)+"-"+s.slice(0,4)+" "+s.slice(11,16):"-";
+const ME=()=>role=="admin"?{name:"Aditi Kapoor",email:"admin@hirewise.demo",role:"Administrator"}:{name:"Priya Menon",email:"recruiter@hirewise.demo",role:"Recruiter"};
+const lg=(a,s="Success",w="")=>D.log.unshift([ME().name,a,stamp(),s,w||(s=="Success"?"The user is authorised and the input passed validation.":"The action was not allowed.")]);
+function toast(m,t){const e=$("#toast");e.className="toast text-bg-"+(t=="error"?"danger":"dark");$("#tb").textContent=m;bootstrap.Toast.getOrCreateInstance(e,{delay:3200}).show()}
+function modal(t,b,onSave,label){$("#mt").textContent=t;$("#mb").innerHTML=b;const s=$("#ms"),bs=bootstrap.Modal.getOrCreateInstance($("#m"));s.textContent=label||"Save";s.style.display=onSave?"":"none";s.onclick=()=>{if(onSave()!==false)bs.hide()};bs.show()}
+const hide=()=>bootstrap.Modal.getOrCreateInstance($("#m")).hide();
+const badge=s=>{const c={Open:"success",Closed:"secondary",Selected:"success",Rejected:"danger","On Hold":"warning",Shortlisted:"info",Completed:"success",Scheduled:"primary",pending:"warning",approved:"success",rejected:"danger",Success:"success",Failed:"danger",Active:"success",Inactive:"secondary",Pending:"warning",Overdue:"danger"}[s]||"primary";return `<span class="badge text-bg-${c}">${s}</span>`};
+const table=(h,r)=>`<div class="card"><div class="card-body"><div class="table-responsive"><table class="table table-hover align-middle"><thead><tr>${h.map(x=>`<th>${x}</th>`).join("")}</tr></thead><tbody>${r.join("")||`<tr><td colspan="${h.length}" class="text-center text-muted py-4">Nothing matches yet.</td></tr>`}</tbody></table></div></div></div>`;
+const title=(h,p,x="")=>`<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4"><div><h2 class="fw-bold mb-0">${h}</h2><p class="text-muted mb-0">${p}</p></div>${x}</div>`;
+const kpi=(l,v,c)=>`<div class="col-6 col-xl-3"><div class="card kpi h-100"><div class="card-body"><p class="text-muted mb-2">${l}</p><h2 class="text-${c}">${v}</h2></div></div></div>`;
+const err=(id,m)=>{$(id).textContent=m;return false};
+
+/* ---------- LOGIN ---------- */
+function login(){
+ $("#app").innerHTML=`<div class="lg"><section class="lg-l"><div class="d-flex align-items-center gap-3 mb-4"><div class="logo">H</div><div><div class="fs-4 fw-bold">HireWise <span style="color:#7dd3fc">AI</span></div><small>Recruitment Management System</small></div></div>
+ <h1>Build Better Teams.<br>Discover <span>Better Talent.</span></h1><p class="mt-3 opacity-75">Smart Recruitment. Smarter Hiring. Powered by AI.</p>
+ <ul class="list-unstyled mt-4 opacity-75"><li class="mb-2">✦ Streamlined hiring process</li><li class="mb-2">⌕ Smart candidate management</li><li>✓ Secure &amp; reliable</li></ul></section>
+ <section class="lg-r"><div class="lg-box"><h2 class="fw-bold">Welcome Back!</h2><p class="text-muted">Sign in to your account to continue</p>
+ <label class="form-label">Email Address</label><input class="form-control mb-3" type="email" placeholder="Enter your email address">
+ <label class="form-label">Password</label><input class="form-control mb-3" type="password" placeholder="Enter your password">
+ <button class="btn btn-primary w-100 py-2" onclick="toast('Prototype: use the Recruiter or Admin button below')">Sign In →</button>
+ <div class="d-flex align-items-center gap-2 my-4 text-muted small"><hr class="flex-fill m-0">or continue as<hr class="flex-fill m-0"></div>
+ <div class="row g-3"><div class="col-6"><button class="role-btn role-r" onclick="enter('recruiter')">👤 Recruiter</button></div><div class="col-6"><button class="role-btn role-a" onclick="enter('admin')">🛡 Admin</button></div></div>
+ <p class="text-center small text-muted mt-3">Prototype demo — dummy data, no password needed.</p></div></section></div>`;
+}
+function enter(r){role=r;route="dashboard";shell()}
+function logout(){role=null;login()}
+
+/* ---------- SHELL ---------- */
+const NAV={recruiter:[["dashboard","grid","Dashboard"],["vacancies","briefcase","Vacancies"],["candidates","people","Candidates"],["interviews","chat-square-text","Interview Desk"],["followups","check2-square","Follow-ups"],["profile","person-circle","Profile"]],
+ admin:[["dashboard","grid","Overview"],["users","people","User Management"],["vacancies","briefcase","Vacancies"],["log","clock-history","Activity Log"],["requests","person-plus","Account Requests"],["profile","person-circle","Profile"]]};
+function shell(){
+ const me=ME();
+ $("#app").innerHTML=`<aside class="side"><div class="brand"><i class="bi bi-person-check-fill text-info"></i> HireWise AI<small>Recruitment workspace</small></div>
+ ${NAV[role].map(n=>`<a class="nav-i ${route==n[0]?"on":""}" onclick="go('${n[0]}')"><i class="bi bi-${n[1]} me-2"></i>${n[2]}</a>`).join("")}
+ <div class="bottom"><div class="text-white-50">Signed in as</div><div class="fw-semibold">${me.name}</div><div class="text-white-50 mb-3">${me.role}</div><button class="btn btn-outline-light btn-sm w-100" onclick="logout()"><i class="bi bi-box-arrow-left me-1"></i>Logout</button></div></aside>
+ <main class="main"><header class="top"><div class="fw-semibold">${role=="admin"?"Administrator":"Recruiter"} Workspace</div><div class="ms-auto small text-muted">${me.name}</div></header><section class="page" id="page"></section>
+ <footer class="text-center small text-muted pb-3">© 2026 HireWise AI · AI-assisted recruitment with human decision-making</footer></main>`;
+ render();
+}
+function go(r){route=r;shell()}
+function render(){const set=role=="admin"?A:R;$("#page").innerHTML=set[route]();if(set.after&&set.after[route])set.after[route]()}
+const mine=()=>D.vacancies.filter(v=>v.owner=="Priya Menon"),myc=()=>D.candidates.filter(c=>mine().some(v=>v.id==c.vid));
+const PROFILE=()=>{const u=ME();return title("Profile","Update your account information.")+`<div class="card" style="max-width:480px"><div class="card-body"><label class="form-label">Full name</label><input class="form-control mb-3" value="${u.name}"><label class="form-label">Email</label><input class="form-control mb-3" value="${u.email}"><label class="form-label">Role</label><input class="form-control mb-3" value="${u.role}" disabled><button class="btn btn-primary" onclick="toast('Profile updated.')">Save changes</button> <button class="btn btn-outline-secondary" onclick="toast('Demo only: a password change form would open here.')">Change password</button></div></div>`};
+const evid=c=>vac(c.vid).skills.map(s=>{const f=c.skills.some(x=>x.toLowerCase()==s.toLowerCase());return [s,f,f?`Worked with ${s} while building and shipping web application features.`:"",f?1:""]});
+
+/* ---------- RECRUITER ---------- */
+const R={
+dashboard(){
+ const cs=myc(),up=D.interviews.filter(i=>i.status=="Scheduled");
+ return title("Recruiter Dashboard","Overview of your hiring activity.")+`<div class="row g-3 mb-4">${kpi("Active vacancies",mine().filter(v=>v.status=="Open").length,"primary")+kpi("Total candidates",cs.length,"success")+kpi("Upcoming interviews",up.length,"info")+kpi("Pending follow-ups",D.followups.filter(f=>!f.done).length,"warning")}</div>
+ <div class="row g-3"><div class="col-lg-6"><div class="card h-100"><div class="card-body"><h5 class="fw-bold mb-3">Candidates by pipeline stage</h5>${STAGES.map(s=>{const n=cs.filter(c=>c.status==s).length;return `<div class="small d-flex justify-content-between"><span>${s}</span><b>${n}</b></div><div class="progress mb-2" style="height:6px"><div class="progress-bar" style="width:${n/(cs.length||1)*100}%"></div></div>`}).join("")}</div></div></div>
+ <div class="col-lg-6"><div class="card h-100"><div class="card-body"><h5 class="fw-bold mb-3">Upcoming interviews</h5>${up.map(i=>`<div class="d-flex justify-content-between border-bottom py-2 small"><span><b>${cand(i.cid).name}</b> with ${i.by}</span><span class="text-muted">${fmt(i.dt)}</span></div>`).join("")||"<p class='text-muted mb-0'>No upcoming interviews.</p>"}</div></div></div>
+ <div class="col-12"><div class="card"><div class="card-body"><h5 class="fw-bold mb-3">Recent activities</h5>${D.acts.slice(0,6).map(a=>`<div class="border-bottom py-2 small">${a}</div>`).join("")}</div></div></div></div>`},
+vacancies(){
+ return title("Vacancies","Create, edit and close job openings.",`<button class="btn btn-primary" onclick="vacForm()"><i class="bi bi-plus-lg me-1"></i>Create vacancy</button>`)+
+ table(["Position","Location","Openings","Required skills","Status",""],mine().map(v=>`<tr><td class="fw-semibold">${v.title}</td><td>${v.loc}</td><td>${v.n}</td><td>${v.skills.map(s=>`<span class="badge text-bg-light border me-1">${s}</span>`).join("")}</td><td>${badge(v.status)}</td><td class="text-end text-nowrap"><button class="btn btn-sm btn-light" onclick="vacForm(${v.id})">Edit</button> <button class="btn btn-sm btn-outline-primary" onclick="tglVac(${v.id})">${v.status=="Open"?"Close":"Reopen"}</button></td></tr>`))},
+candidates(){
+ return title("Candidates","Resume pipeline for your vacancies.",`<button class="btn btn-primary" onclick="upForm()"><i class="bi bi-upload me-1"></i>Upload resume</button>`)+
+ `<div class="row g-2 mb-3"><div class="col-md-6"><input id="cq" class="form-control" placeholder="Search by name or email" oninput="cl()"></div><div class="col-md-6"><select id="cv" class="form-select" onchange="cl()"><option value="">All vacancies</option>${mine().map(v=>`<option value="${v.id}">${v.title}</option>`).join("")}</select></div></div><div id="cl"></div>`},
+interviews(){
+ const sch=D.interviews.filter(i=>i.status=="Scheduled");
+ return title("Interview Desk","Prepare questions, take notes and complete interviews.")+
+ (sch.length?`<h6 class="fw-bold">Scheduled interviews</h6>`+table(["Candidate","Vacancy","When","Location","Interviewer",""],sch.map(i=>`<tr><td class="fw-semibold">${cand(i.cid).name}</td><td>${vac(cand(i.cid).vid).title}</td><td>${fmt(i.dt)}</td><td>${i.place}</td><td>${i.by}</td><td><button class="btn btn-sm btn-outline-primary" onclick="openDesk(${i.cid})">Open in desk</button></td></tr>`))+`<div class="mb-4"></div>`:"")+
+ `<select id="ic" class="form-select mb-2" onchange="idesk()"><option value="">Select a candidate…</option>${myc().filter(c=>!c.iv&&!["Rejected","Closed"].includes(c.status)).map(c=>`<option value="${c.id}">${c.name}: ${vac(c.vid).title}</option>`).join("")}</select><div class="small text-muted mb-3">Candidates with a completed interview are not listed. Their feedback is on the candidate record.</div><div id="ix"></div>`},
+followups(){
+ return title("Follow-ups","Candidate communication tasks.",`<button class="btn btn-primary" onclick="fuForm()"><i class="bi bi-plus-lg me-1"></i>Add follow-up</button>`)+
+ table(["Candidate","Action","Due","Status",""],D.followups.map(f=>{const od=!f.done&&f.due<today;return `<tr><td class="fw-semibold">${cand(f.cid).name}</td><td>${f.text}</td><td>${f.due} ${od?badge("Overdue"):""}</td><td>${f.done?badge("Completed"):badge("Pending")}</td><td><button class="btn btn-sm btn-outline-${f.done?"secondary":"success"}" onclick="fdone(${f.id})">${f.done?"Reopen":"Mark complete"}</button></td></tr>`}))},
+profile:PROFILE,
+after:{candidates:()=>cl()}};
+const sp=x=>$(x).value.split(",").map(s=>s.trim()).filter(Boolean);
+function vacForm(id){const v=vac(id)||{title:"",loc:"",n:1,skills:[],opt:[],desc:""};
+ modal(id?"Edit vacancy":"Create vacancy",`<label class="small">Job title</label><input id="vt" class="form-control mb-2" value="${v.title}"><label class="small">Job description</label><textarea id="vd" class="form-control mb-2" rows="3">${v.desc}</textarea><label class="small">Required skills (comma separated)</label><input id="vr" class="form-control mb-2" value="${v.skills}"><label class="small">Optional skills</label><input id="vo" class="form-control mb-2" value="${v.opt}"><div class="row"><div class="col"><label class="small">Location</label><input id="vl" class="form-control" value="${v.loc}"></div><div class="col"><label class="small">Openings</label><input id="vn" type="number" min="1" class="form-control" value="${v.n}"></div></div><div class="text-danger small mt-2" id="ve"></div>`,()=>{
+  const t=$("#vt").value.trim(),r=sp("#vr");if(!t||!r.length)return err("#ve","Add a job title and at least one required skill.");
+  const o={title:t,desc:$("#vd").value,skills:r,opt:sp("#vo"),loc:$("#vl").value||"Remote",n:+$("#vn").value||1};
+  if(id)Object.assign(v,o);else D.vacancies.push({id:Date.now(),status:"Open",owner:"Priya Menon",date:"26-11-2026",...o});
+  D.acts.unshift(`Vacancy "${t}" ${id?"updated":"created"}`);lg(`${id?"Updated":"Created"} vacancy "${t}"`);toast(id?"Vacancy updated.":"Vacancy created.");go("vacancies")})}
+function tglVac(id){const v=vac(id);v.status=v.status=="Open"?"Closed":"Open";D.acts.unshift(`Vacancy "${v.title}" ${v.status=="Open"?"reopened":"closed"}`);lg(`${v.status=="Open"?"Reopened":"Closed"} vacancy "${v.title}"`);toast(v.status=="Open"?"Vacancy reopened.":"Vacancy closed. New resume uploads are blocked.");go("vacancies")}
+function cl(){const q=$("#cq").value.toLowerCase(),v=$("#cv").value;
+ $("#cl").innerHTML=table(["Candidate","Vacancy","Experience","Interview score","Stage"],myc().filter(c=>(!v||c.vid==v)&&(c.name+c.email).toLowerCase().includes(q)).map(c=>`<tr role="button" onclick="prof(${c.id})"><td><div class="fw-semibold">${c.name}</div><small class="text-muted">${c.email}</small></td><td>${vac(c.vid).title}</td><td>${c.exp} yrs</td><td>${c.iv?c.iv.total+" / 50":"-"}</td><td>${badge(c.status)}</td></tr>`))}
+function dup(){$("#ud").classList.toggle("d-none",!D.candidates.some(c=>c.email.toLowerCase()==$("#ue").value.trim().toLowerCase()))}
+function upForm(){modal("Upload resume",`<label class="small">Vacancy (closed vacancies cannot accept uploads)</label><select id="uv" class="form-select mb-2">${mine().map(v=>`<option value="${v.id}" ${v.status=="Open"?"":"disabled"}>${v.title}${v.status=="Open"?"":" (Closed)"}</option>`).join("")}</select><label class="small">Resume (PDF or DOCX)</label><input id="uf" type="file" accept=".pdf,.docx" class="form-control mb-2"><label class="small">Extracted email (review before saving)</label><input id="ue" class="form-control mb-2" placeholder="candidate@example.com" oninput="dup()"><div id="ud" class="alert alert-warning py-2 small d-none">Duplicate email: a candidate with this email already exists.</div><div id="ux" class="text-danger small"></div><p class="small text-muted mb-0">The original file is preserved. Review and confirm AI-extracted details on the candidate profile.</p>`,()=>{
+ const f=$("#uf").files[0],em=$("#ue").value.trim();
+ if(!f||!/\.(pdf|docx)$/i.test(f.name))return err("#ux","Choose a PDF or DOCX file.");
+ if(!re.test(em))return err("#ux","Enter a valid email address.");
+ if(D.candidates.some(c=>c.email.toLowerCase()==em.toLowerCase()))return err("#ux","This email already exists. Open the existing candidate instead.");
+ const n=f.name.replace(/\.(pdf|docx)$/i,"").replace(/[_-]+/g," ");
+ D.candidates.push({id:Date.now(),name:n,email:em,phone:"",vid:+$("#uv").value,status:"New",exp:0,skills:[],file:f.name});
+ D.acts.unshift(`Resume uploaded for ${n}`);lg(`Uploaded resume for ${n}`);toast("Resume uploaded. Review the extracted details.");go("candidates")},"Upload")}
+function prof(id){const c=cand(id),E=[...evid(c)].sort((a,b)=>b[1]-a[1]),m=E.filter(e=>e[1]).length;
+ $("#page").innerHTML=`<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3"><div><button class="btn btn-link p-0" onclick="go('candidates')">&larr; Back to candidates</button><h2 class="fw-bold mb-0">${c.name}</h2><div class="text-muted">${vac(c.vid).title} ${badge(c.status)}</div></div>${c.status!="Rejected"?`<button class="btn btn-primary" onclick="offer(${c.id})"><i class="bi bi-file-earmark-text me-1"></i>Offer letter</button>`:""}</div>
+ <div class="row g-3"><div class="col-lg-5">
+ <div class="card mb-3"><div class="card-body"><h6 class="fw-bold">Stage</h6><select id="sg" class="form-select mb-2">${(c.iv?POST:STAGES).map(s=>`<option ${s==c.status?"selected":""}>${s}</option>`).join("")}</select><input id="sr" class="form-control mb-2" placeholder="Reason (required for On Hold or Rejected)"><div class="d-flex gap-2"><button class="btn btn-primary" onclick="updStage(${c.id})">Update stage</button>${c.iv&&!["Shortlisted","Rejected"].includes(c.status)?`<button class="btn btn-outline-primary" onclick="shortlist(${c.id})">Shortlist</button>`:""}</div><div class="small text-muted mt-2">Only the recruiter changes the stage.${(c.hist||[]).slice(-1).map(h=>" Last: "+h).join("")}</div></div></div>
+ <div class="card mb-3"><div class="card-body"><h6 class="fw-bold">Extracted details (editable)</h6>${[["name","Full name"],["email","Email"],["phone","Phone"],["exp","Experience (years)"]].map(f=>`<label class="small mt-2">${f[1]}</label><input class="form-control" id="p_${f[0]}" value="${c[f[0]]??""}">`).join("")}<div class="form-check mt-3"><input type="checkbox" class="form-check-input" id="pc" ${c.ok?"checked":""}><label class="form-check-label small" for="pc">I reviewed and confirm these AI-extracted details</label></div><button class="btn btn-primary mt-3" onclick="saveC(${c.id})">Save changes</button></div></div>
+ <div class="card"><div class="card-body"><h6 class="fw-bold">Resume preview</h6><div class="bg-light rounded p-4 text-center small text-muted"><i class="bi bi-file-earmark-text fs-1"></i><br>${c.file||c.name.replace(/ /g,"_")+"_Resume.pdf"}<br>Original file preserved (read-only)</div></div></div></div>
+ <div class="col-lg-7">${c.iv?`<div class="card mb-3"><div class="card-body"><h6 class="fw-bold">Interview feedback</h6><div class="row text-center g-2 mb-2">${[["Performance",c.iv.perf,25],["Confidence",c.iv.conf,10],["Communication",c.iv.comm,15],["Overall",c.iv.total,50]].map(s=>`<div class="col-6 col-md-3"><div class="border rounded py-2"><b class="fs-5">${s[1]}</b><small class="text-muted">/${s[2]}</small><div class="small">${s[0]}</div></div></div>`).join("")}</div><div class="small text-muted mb-2">Interviewed by ${c.iv.who}${c.iv.when?" on "+fmt(c.iv.when):""}. Scores were entered by the recruiter, not by AI.</div><details class="mb-1"><summary class="small">Interview summary</summary><pre class="small mb-0" style="white-space:pre-wrap">${c.iv.sum}</pre></details><details><summary class="small">Original interviewer notes</summary><pre class="small mb-0" style="white-space:pre-wrap">${c.iv.raw}</pre></details></div></div>`:`<div class="card mb-3"><div class="card-body small text-muted">No interview feedback yet. It appears here after the interview is completed in the Interview Desk.</div></div>`}
+ <div class="card"><div class="card-body"><h6 class="fw-bold">Resume evidence mapping: ${vac(c.vid).title}</h6><div class="mb-2"><span class="badge text-bg-success">Matched skills: ${m}</span> <span class="badge text-bg-secondary">Unmatched skills: ${E.length-m}</span></div><p class="small text-muted">Unmatched means no clear match was found in the resume text. It does not mean the candidate lacks the skill. Verify it in the interview.</p>${E.map(e=>`<div class="ev ${e[1]?"F":""} border rounded p-2 mb-2"><div class="d-flex justify-content-between"><b>${e[0]}</b><span class="badge text-bg-${e[1]?"success":"secondary"}">${e[1]?"Matched":"Unmatched"}</span></div>${e[2]?`<div class="small fst-italic mt-1">&ldquo;${e[2]}&rdquo;</div><div class="small text-muted">Source: page ${e[3]}</div>`:`<div class="small text-muted mt-1">No match found in the resume text.</div>`}</div>`).join("")}</div></div></div></div>`}
+function updStage(id){const c=cand(id),s=$("#sg").value,r=$("#sr").value.trim();
+ if(s==c.status)return toast("The stage is unchanged.","error");
+ if(["Rejected","On Hold"].includes(s)&&!r)return toast("Add a reason for this stage.","error");
+ (c.hist=c.hist||[]).push(`${c.status} to ${s} by ${ME().name}${r?" ("+r+")":""}`);c.status=s;D.acts.unshift(`${c.name} moved to ${s}`);lg(`Moved ${c.name} to ${s}`);toast("Stage updated.");prof(id)}
+function shortlist(id){const c=cand(id);(c.hist=c.hist||[]).push(`${c.status} to Shortlisted by ${ME().name}`);c.status="Shortlisted";D.acts.unshift(`${c.name} shortlisted`);lg(`Shortlisted ${c.name}`);toast("Candidate shortlisted.");prof(id)}
+function offer(id){const c=cand(id),v=vac(c.vid),sel=c.status=="Selected";
+ modal("Offer letter"+(sel?"":" (draft)"),`<div class="border rounded p-3 small"><p><b>HireWise Demo Company</b><br>${today}</p><p>Dear ${c.name},</p><p>We are pleased to offer you the position of <b>${v.title}</b> (${v.loc}). Joining date, compensation and terms will be confirmed by the recruiter before this letter is sent.</p><p class="mb-0">Regards,<br>${ME().name}</p></div><p class="small text-muted mt-2 mb-0">${sel?"A recruiter must review this letter before sending.":"Draft only. Offers are normally sent once the candidate is Selected."}</p>`,
+ ()=>{if(sel){D.acts.unshift(`Offer letter sent to ${c.name}`);lg(`Sent offer letter to ${c.name}`);toast("Offer letter sent to "+c.email+" (simulated).")}else{D.acts.unshift(`Offer letter drafted for ${c.name}`);toast("Offer letter draft saved.")}},sel?"Send offer letter":"Save draft")}
+function saveC(id){const c=cand(id),em=$("#p_email").value.trim();
+ if(!$("#p_name").value.trim()||!re.test(em))return toast("Enter a name and a valid email.","error");
+ if(D.candidates.some(x=>x.id!=id&&x.email.toLowerCase()==em.toLowerCase()))return toast("Another candidate already uses this email.","error");
+ c.name=$("#p_name").value.trim();c.email=em;c.phone=$("#p_phone").value.trim();c.exp=parseFloat($("#p_exp").value)||0;c.ok=$("#pc").checked;
+ toast(c.ok?"Details confirmed and saved.":"Saved. Details still need your confirmation.")}
+/* interview desk */
+function sync(id){const d=I[id];if(!$("#iw"))return;d.when=$("#iw").value;d.who=$("#ir").value;if(!d.lock)d.raw=$("#in").value}
+function openDesk(cid){$("#ic").value=cid;idesk();$("#ix").scrollIntoView({behavior:"smooth"})}
+function idesk(){const id=$("#ic").value;if(!id){$("#ix").innerHTML="";return}
+ const c=cand(id),v=vac(c.vid),sc=D.interviews.find(i=>i.cid==id&&i.status=="Scheduled"),d=I[id]=I[id]||{q:[],when:sc?sc.dt:"",who:sc?sc.by:ME().name,raw:"",sum:"",lock:false};
+ $("#ix").innerHTML=`<div class="card mb-3"><div class="card-body"><b>${v.title}</b> (${v.loc})<div class="small text-muted">Required skills: ${v.skills.join(", ")}</div></div></div>
+ <div class="card mb-3"><div class="card-body"><div class="d-flex justify-content-between mb-2"><h6 class="fw-bold">Technical questions (AI draft, editable)</h6><button class="btn btn-sm btn-primary" onclick="genQ(${id})"><i class="bi bi-stars me-1"></i>Generate questions</button></div>${d.q.map((q,i)=>`<div class="mb-3"><label class="small fw-semibold">Question ${i+1}</label><textarea class="form-control" rows="2" onchange="I[${id}].q[${i}][0]=this.value">${q[0]}</textarea><label class="small text-muted mt-1">What to listen for</label><textarea class="form-control form-control-sm" rows="2" onchange="I[${id}].q[${i}][1]=this.value">${q[1]}</textarea></div>`).join("")||`<p class="small text-muted mb-0">No questions yet. Generate a draft based on this candidate&rsquo;s resume evidence.</p>`}</div></div>
+ <div class="card mb-3"><div class="card-body"><div class="row g-2"><div class="col-md-6"><label class="small">Interview date and time</label><input type="datetime-local" class="form-control" id="iw" value="${d.when}"></div><div class="col-md-6"><label class="small">Interviewer (you by default)</label><select class="form-select" id="ir">${STAFF.map(s=>`<option ${s==d.who?"selected":""}>${s}</option>`).join("")}</select></div></div><label class="small mt-3">Raw interviewer notes ${d.lock?`<span class="badge text-bg-secondary">Original preserved, read-only</span>`:""}</label><textarea id="in" class="form-control" rows="5" ${d.lock?"readonly":""}>${d.raw}</textarea>${d.lock?"":`<button class="btn btn-primary mt-2" onclick="orgN(${id})">Save notes and organise with AI</button>`}</div></div>
+ ${d.sum?`<div class="card"><div class="card-body d-flex flex-column"><h6 class="fw-bold">AI-organised summary (editable draft)</h6><textarea id="is" class="form-control" rows="8">${d.sum}</textarea><button class="btn btn-primary mt-2 align-self-start" onclick="saveS(${id})">Save summary</button></div></div>`:""}${d.lock?scoreCard(id):""}`}
+function genQ(id){sync(id);const c=cand(id),q=evid(c).map(e=>e[1]?[`Your resume says: "${e[2]}" Walk me through what you personally did and why.`,"Personal contribution, trade-offs considered, and a clear explanation of the approach."]:[`Can you describe any hands-on experience you have with ${e[0]}?`,"Concrete projects and depth of understanding. A missing resume mention is not a gap by itself."]);
+ q.push(["Describe a difficult problem you solved and how you debugged it.","Structured approach, tool use, and what they learned."]);I[id].q=q.slice(0,8);idesk();toast("Draft questions generated. Edit them as needed.")}
+function orgN(id){sync(id);const d=I[id];if(!d.raw.trim())return toast("Add interviewer notes first.","error");d.lock=true;
+ d.sum=`AI-organised draft. Review and edit.\n\nInterview: ${d.when?fmt(d.when):"date not set"} with ${d.who}\n\nKey points from the notes:\n${d.raw.split("\n").filter(l=>l.trim()).map(l=>"- "+l.trim()).join("\n")}\n\nThis summary only restates the interviewer's notes. It contains no hiring decision.`;idesk();toast("Notes saved and summary drafted.")}
+function saveS(id){I[id].sum=$("#is").value;toast("Summary saved.")}
+function scoreCard(id){const f=(i,l,mx)=>`<div class="col-md-4"><label class="small">${l} (0-${mx})</label><input id="${i}" type="number" min="0" max="${mx}" class="form-control" oninput="tot()"></div>`;
+ return `<div class="card mt-3"><div class="card-body"><h6 class="fw-bold">Interview scores (entered by you)</h6><div class="row g-2">${f("sp","Performance",25)}${f("sc","Confidence",10)}${f("sm","Communication",15)}</div><div class="mt-2">Overall: <b id="st">0</b> / 50</div><p class="small text-muted mb-2">These are your own scores. AI does not score or rank candidates.</p><button class="btn btn-success" onclick="finish(${id})">Complete interview and save feedback</button></div></div>`}
+function tot(){$("#st").textContent=(+$("#sp").value||0)+(+$("#sc").value||0)+(+$("#sm").value||0)}
+function finish(id){const d=I[id],c=cand(id),p=$("#sp").value,cf=$("#sc").value,m=$("#sm").value,bad=(v,mx)=>v===""||!Number.isInteger(+v)||+v<0||+v>mx;
+ if(bad(p,25)||bad(cf,10)||bad(m,15))return toast("Enter whole-number scores: performance 0-25, confidence 0-10, communication 0-15.","error");
+ sync(id);d.sum=$("#is")?$("#is").value:d.sum;
+ c.iv={perf:+p,conf:+cf,comm:+m,total:+p+ +cf+ +m,when:d.when,who:d.who,raw:d.raw,sum:d.sum};c.status="Interviewed";
+ D.interviews.filter(i=>i.cid==id&&i.status=="Scheduled").forEach(i=>i.status="Completed");
+ D.acts.unshift(`Interview completed for ${c.name}`);lg(`Completed interview for ${c.name}`);toast("Interview completed. Feedback saved to the candidate record.");go("interviews")}
+function fdone(id){const f=D.followups.find(x=>x.id==id);f.done=!f.done;toast(f.done?"Follow-up marked complete.":"Follow-up reopened.");go("followups")}
+function fuForm(){modal("Add follow-up",`<label class="small">Candidate</label><select id="fc" class="form-select mb-2">${myc().map(c=>`<option value="${c.id}">${c.name}</option>`).join("")}</select><label class="small">Action</label><input id="fa" class="form-control mb-2"><label class="small">Due date</label><input id="fd" type="date" class="form-control" value="${today}"><div class="text-danger small mt-2" id="fx"></div>`,()=>{
+ if(!$("#fa").value.trim()||!$("#fd").value)return err("#fx","Enter an action and a due date.");
+ D.followups.push({id:Date.now(),cid:+$("#fc").value,text:$("#fa").value.trim(),due:$("#fd").value,done:false});toast("Follow-up added.");go("followups")},"Add")}
+
+/* ---------- ADMIN ---------- */
+const logT=(r,a)=>table(a?["User","Action","Date and time","Status"]:["User","Date and time","Status","Reason"],r.map(l=>`<tr><td>${l[0]}</td>${a?`<td>${l[1]}</td>`:""}<td class="text-nowrap">${l[2]}</td><td>${badge(l[3])}</td>${a?"":`<td class="small">${l[4]||""}</td>`}</tr>`));
+const A={
+dashboard(){
+ const p=D.requests.filter(r=>r.status=="pending").length,U=D.users;
+ return title("Admin Dashboard","Manage recruiters and monitor recruitment activities.")+`<div class="row g-3 mb-4">${kpi("Total users",U.length,"primary")+kpi("Active recruiters",U.filter(u=>u.role=="Recruiter"&&u.active).length,"success")+kpi("Placement coordinators",U.filter(u=>u.role=="Placement Coordinator").length,"info")+kpi("Total vacancies",D.vacancies.length,"warning")+kpi("Total candidates",D.candidates.length,"secondary")+kpi("Pending requests",p,"danger")}</div>
+ <h5 class="fw-bold mb-3">Recent system activity</h5>${logT(D.log.slice(0,4),true)}
+ <div class="d-flex gap-2 flex-wrap mt-3"><button class="btn btn-outline-primary" onclick="go('users')">Manage users</button><button class="btn btn-outline-success" onclick="uForm()">Create user</button><button class="btn btn-outline-secondary" onclick="go('requests')">Review requests</button></div>`},
+users(){
+ return title("User Management","Administrator and recruiter accounts.",`<button class="btn btn-primary" onclick="uForm()"><i class="bi bi-plus-lg me-1"></i>Create user</button>`)+
+ `<div class="row g-2 mb-3"><div class="col-md-6"><input id="uq" class="form-control" placeholder="Search by name or email" oninput="ul()"></div><div class="col-6 col-md-3"><select id="ur" class="form-select" onchange="ul()"><option value="">All roles</option><option>Administrator</option><option>Recruiter</option><option>Placement Coordinator</option></select></div><div class="col-6 col-md-3"><select id="us" class="form-select" onchange="ul()"><option value="">All statuses</option><option value="1">Active</option><option value="0">Inactive</option></select></div></div><div id="ul"></div>`},
+vacancies(){
+ return title("Vacancies","View vacancies created by all recruiters.")+
+ table(["Position","Recruiter","Location","Openings","Candidates","Status","Created"],D.vacancies.map(v=>`<tr><td class="fw-semibold">${v.title}</td><td>${v.owner}</td><td>${v.loc}</td><td>${v.n}</td><td>${D.candidates.filter(c=>c.vid==v.id).length}</td><td>${badge(v.status)}</td><td>${v.date}</td></tr>`))},
+log(){
+ return title("Activity Log","Recorded administrative and recruitment actions.")+`<div class="row mb-3"><div class="col-md-4"><select id="lsf" class="form-select" onchange="lgf()"><option value="">All statuses</option><option value="Success">Success</option><option value="Failed">Failure</option></select></div></div><div id="lgl">${logT(D.log,false)}</div>`},
+requests(){
+ return title("Account Requests","Review and approve new recruiter accounts.")+
+ table(["Name","Email","Requested role","Date","Status","Action"],D.requests.map(r=>`<tr><td class="fw-semibold">${r.name}</td><td>${r.email}</td><td>${r.role}</td><td>${r.date}</td><td>${badge(r.status)}</td><td>${r.status=="pending"?`<button class="btn btn-sm btn-success" onclick="review(${r.id},'approved')">Approve</button> <button class="btn btn-sm btn-outline-danger" onclick="review(${r.id},'rejected')">Reject</button>`:""}</td></tr>`))},
+profile:PROFILE,
+after:{users:()=>ul()}};
+function ul(){const q=$("#uq").value.toLowerCase(),r=$("#ur").value,s=$("#us").value;
+ $("#ul").innerHTML=table(["Name","Email","Role","Status",""],D.users.filter(u=>(u.name+u.email).toLowerCase().includes(q)&&(!r||u.role==r)&&(!s||+u.active==s)).map(u=>`<tr><td class="fw-semibold">${u.name}</td><td>${u.email}</td><td>${u.role}</td><td>${badge(u.active?"Active":"Inactive")}</td><td class="text-end text-nowrap"><button class="btn btn-sm btn-light" onclick="uForm(${u.id})">Edit</button> <button class="btn btn-sm btn-light" onclick="uTgl(${u.id})">${u.active?"Deactivate":"Activate"}</button> <button class="btn btn-sm btn-outline-primary" onclick="uReset(${u.id})">Reset password</button></td></tr>`))}
+function lgf(){const s=$("#lsf").value;$("#lgl").innerHTML=logT(D.log.filter(l=>!s||l[3]==s),false)}
+function uForm(id){const u=D.users.find(x=>x.id==id)||{name:"",email:"",role:"Recruiter"};
+ modal(id?"Edit user":"Create user",`<label class="small">Full name</label><input id="un" class="form-control mb-2" value="${u.name}"><label class="small">Email address</label><input id="ue" class="form-control mb-2" value="${u.email}"><label class="small">Role</label><select id="uro" class="form-select mb-2">${["Recruiter","Placement Coordinator","Administrator"].map(r=>`<option ${r==u.role?"selected":""}>${r}</option>`).join("")}</select>${id?"":`<label class="small">Temporary password</label><input id="up" type="password" class="form-control mb-2"><div class="small text-muted">The user must change it at first login.</div>`}<div class="text-danger small mt-2" id="ux"></div>`,()=>{
+ const n=$("#un").value.trim(),e=$("#ue").value.trim();
+ if(n.length<2)return err("#ux","Enter the full name.");if(!re.test(e))return err("#ux","Enter a valid email address.");
+ if(D.users.some(x=>x.id!=id&&x.email.toLowerCase()==e.toLowerCase()))return err("#ux","This email is already in use.");
+ if(!id&&!/^(?=.*\d).{8,}$/.test($("#up").value))return err("#ux","Password needs 8+ characters including a number.");
+ if(id){Object.assign(u,{name:n,email:e,role:$("#uro").value});lg(`Updated user ${n}`)}else{D.users.push({id:Date.now(),name:n,email:e,role:$("#uro").value,active:true});lg(`Created user ${n}`)}
+ toast(id?"User updated.":"User created.");go("users")})}
+function uTgl(id){const u=D.users.find(x=>x.id==id);if(u.email==ME().email){lg("Tried to deactivate own account","Failed","Administrators cannot deactivate their own account.");return toast("You cannot deactivate your own account.","error")}
+ u.active=!u.active;lg(`${u.active?"Activated":"Deactivated"} ${u.name}`);toast(u.active?"Account activated.":"Account deactivated.");ul()}
+function uReset(id){const u=D.users.find(x=>x.id==id),t=Math.random().toString(36).slice(2,8)+"A9!";
+ modal("Reset password",`<p>Generate a one-time temporary password for <b>${u.name}</b>? Their current password stops working and they must set a new one at next login.</p>`,()=>{lg(`Reset password for ${u.name}`,"Success","The administrator is authorised, so a one-time temporary password was generated.");toast("Password reset.");setTimeout(()=>modal("Temporary password",`<p>Share this once, securely:</p><code class="fs-5">${t}</code>`,()=>true,"Done"),400)},"Generate password")}
+function review(id,s){const r=D.requests.find(x=>x.id==id);r.status=s;if(s=="approved")D.users.push({id:Date.now(),name:r.name,email:r.email,role:r.role,active:true});lg(`${s=="approved"?"Approved":"Rejected"} account request for ${r.name}`);render();toast("Request "+s+".")}
+
+login();
+</script>
+</body>
+</html>
